@@ -1,0 +1,141 @@
+/*
+ * This is a manifest file that'll automatically include all the stylesheets available in this directory
+ * and any sub-directories. You're free to add application-wide styles to this file and they'll appear at
+ * the top of the compiled file, but it's generally better to create a new file per style scope.
+ *= require_self
+ *= require_tree . 
+*/
+
+
+body { color: #333; 
+/*background: -moz-linear-gradient(center top , #3377ff, green) repeat scroll 0 0 transparent;*/
+background-image: url("10.jpg");
+background-position: center;
+background-repeat: no-repeat;
+}
+
+body, p, ol, ul, td {
+  font-family: verdana, arial, helvetica, sans-serif;
+  font-size:   13px;
+  line-height: 18px;
+}
+
+/* Round corners */
+div{
+    -moz-border-radius:    10px;
+    -webkit-border-radius: 10px;
+    border-radius:         10px;
+}
+
+.site {
+  width: 960px;
+  margin: auto;
+  background-color: #D0D0D0 ; 
+  overflow: auto;
+
+}
+.header {
+  text-align: center;
+ 
+}
+.main {
+  min-height: 400px;
+  overflow: auto;
+}
+.sidebar {
+  min-height: 400px;
+  float: left;
+  display: block;
+
+  width: 30%;
+
+  background: -moz-linear-gradient(center top ,white, #99fcfd) repeat scroll 0 0 transparent;
+}
+.rightebar {
+  min-height: 400px;
+  float: right;
+  display: block;
+  width: 20%;
+  background: -moz-linear-gradient(center top ,white, #99fcfd) repeat scroll 0 0 transparent; 
+  
+}
+
+.content {
+  padding-left: 30px;
+  min-height: 400px;
+  float: left;
+  width: 70%;
+  
+}
+.content-wrapper {
+  padding: 5px;
+}
+.footer {
+  text-align: center;
+  font-family: fantasy;
+  font-size: 14px;
+}
+a.category {
+  font-size: 15pt;
+  line-height: 15pt;
+  padding: 10px;
+}
+
+pre {
+  background-color: #eee;
+  padding: 10px;
+  font-size: 11px;
+}
+
+a { color: #000; }
+a:visited { color: #666; }
+
+div.field, div.actions {
+  margin-bottom: 10px;
+}
+
+#notice {
+  color: green;
+}
+
+.field_with_errors {
+  padding: 2px;
+  background-color: red;
+  display: table;
+}
+
+#error_explanation {
+  width: 450px;
+  border: 2px solid red;
+  padding: 7px;
+  padding-bottom: 0;
+  margin-bottom: 20px;
+  background-color: #f0f0f0;
+}
+
+#error_explanation h2 {
+  text-align: left;
+  font-weight: bold;
+  padding: 5px 5px 5px 15px;
+  font-size: 12px;
+  margin: -7px;
+  margin-bottom: 0px;
+  background-color: #c00;
+  color: #fff;
+}
+
+#error_explanation ul li {
+  font-size: 12px;
+  list-style: square;
+}
+
+.chapters li{
+    padding: 3px;
+}
+li.selected{
+    font-weight: bold;
+    color: red;
+}
+.hmenu{
+    color: green;
+}

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Pigame</title>
+    <%= stylesheet_link_tag    "application" %>
+    <%= javascript_include_tag "application" %>
+    <%= csrf_meta_tags %>
+  </head>
+  <body>
+    <div class="site">
+      <div class="header">
+        <%= image_tag('2.jpg', :width => 960, :height => 200) %>
+        <h1 color ="blue">Онлайн гра "Свинтус" :-)</h1> 
+      </div>
+      <p class="alert"><%= alert %></p>
+
+      <ul class="hmenu">
+        <%= link_to "Правила", root_path  %>
+        <%= link_to "Нова гра",root_path %>
+      </ul>
+      <div class="content"><div class="content-wrapper"><%= yield %></div>
+      </div>
+    </div>   
+    <div class="footer" style="color: yellow"> &copy; Vero 2011</div>
+  </body>
+</html>
