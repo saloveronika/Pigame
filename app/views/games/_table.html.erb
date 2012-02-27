@@ -1,0 +1,16 @@
+<p>
+  <%=  image_tag "#{@trump.image_name}.png", :width => 70, :height => 120 %>
+  <%=  image_tag "17.jpg", :width => 70, :height => 120 %>
+</p>
+
+<% @ph.each do |player, hand| %>
+  <h3> Player: </h3>
+  <p>
+    <% player.hand.each do |card| %>
+      <%=link_to (image_tag "#{card.image_name}.png", :width => 70, :height => 120), games_step_path %>
+    <% end %>
+  </p>
+
+
+<% end %>
+

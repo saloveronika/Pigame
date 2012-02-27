@@ -9,9 +9,10 @@
 
 body { color: #333; 
 /*background: -moz-linear-gradient(center top , #3377ff, green) repeat scroll 0 0 transparent;*/
-background-image: url("10.jpg");
+/*background: whitesmoke, */
+background: -moz-linear-gradient(center top, #ffbdbd,#888888,#99fcfd, #888888, #ffbdbd) repeat scroll 0 0 transparent; 
 background-position: center;
-background-repeat: no-repeat;
+background-repeat: repeat;
 }
 
 body, p, ol, ul, td {
@@ -28,9 +29,10 @@ div{
 }
 
 .site {
-  width: 960px;
+  width: 1200px;
   margin: auto;
-  background-color: #D0D0D0 ; 
+ /* background: -moz-linear-gradient(center top ,chartreuse,  white, chartreuse) repeat scroll 0 0 transparent;*/
+
   overflow: auto;
 
 }
@@ -64,7 +66,7 @@ div{
   padding-left: 30px;
   min-height: 400px;
   float: left;
-  width: 70%;
+  width: 80%;
   
 }
 .content-wrapper {

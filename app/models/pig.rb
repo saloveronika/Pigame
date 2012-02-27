@@ -38,23 +38,26 @@ module Pig
     end
   end
   
-  class Player
+  class Player 
     attr_accessor :game, :hand
 
     def hand= value
       @hand = value.to_deck
+      @hand = @hand.sort_by { |card| card.rank  }
     end
 
     def initialize game
       @game = game
       @used = false
       $change_priority = false
+      $cannot_figth = false    
+      $cannot_put = false
     end
    
   
     def step_card trump
-      game.turn.take!(self)
-      
+      # game.turn.take!(self)
+      $change_priority = false
       #select less card not trump or repeat cards
       repeat_card = hand.sort_by { |card| card.rank  }.group_by { |card| card.rank }.values.max_by(&:size)
       less_card = hand.select { |card| card.rank unless card.suit == trump.suit }.sort_by { |card| card.rank  }.first
@@ -65,13 +68,58 @@ module Pig
         @lc = repeat_card
       end
       #remove it from hand
-      Array(@lc).each { |card| hand.delete card }
+      #Array(@lc).each { |card| hand.delete card }
+      del_card = Array(@lc).first 
+      hand.delete del_card
       
     end
+       
     
-    def fight step_cards, trump
+    def fight_card step_cards, trump
       #analyse suit & rank of step
       #if hand has same suit & bigger rank - remove it from hand
+      @a = check_for_fight_cards step_cards, trump
+      if @a
+        #remove cards
+        Array(@a).each { |card| hand.delete card }
+        $change_priority = false
+        puts "Priority #{$change_priority}" 
+      end
+      @a
+    end
+    
+    def user_step cards
+      #game.turn.take!(self)
+   
+      Array(cards).each { |card| hand.delete card }
+    end
+    
+    def user_fight cards#, trump
+      #if cards
+      Array(cards).each { |card| hand.delete card }
+      # else
+      # hand << Array(cards).compact 
+      # end
+     
+    end
+    
+    def is_there_put_cards table
+      @a=[]    
+      hand.each do |card|
+        table.each do |t| 
+          if t.rank == card.rank
+            @a+=Array(card)
+          end
+        end
+      end
+      if @a.empty?
+        return false
+      else
+        return @a#.first#.length
+      end
+    end
+    
+    def check_for_fight_cards step_cards, trump
       @f = Array.new
       @a = Array.new
       r = Array.new
@@ -81,36 +129,38 @@ module Pig
         r += hand.select {|card| card.rank if card.suit == trump.suit}
         r.each do |j|
           if ((i.suit==trump.suit) and (i.rank > j.rank))
-            puts "There no trump more than step_card"
-            return loose_step step_cards
+            #puts "There no trump more than step_card"
+            return false#loose_step step_cards
           end
         end
       end
       @f.group_by {|card| card.suit}.values.each do |cards|
         @a += Array(cards.min_by {|card| card.rank })
       end
-      puts "In block group_by a=" + @a.to_s + "f=" + @f.to_s
+      #puts "In block group_by a=" + @a.to_s + "f=" + @f.to_s
       if (@a.empty? or (@a.length < step_cards.length))
         # add posibility fight with trump cards
         @a += hand.select{|card| card if card.suit == trump.suit}.sort_by{|card| card.rank}.first(step_cards.length-@a.length)
       
-        puts "select trump card"
-        puts "a=" + @a.to_s + "f=" + @f.to_s
+        #  puts "select trump card"
+        # puts "a=" + @a.to_s + "f=" + @f.to_s
         if (@a.empty? or (@a.length < step_cards.length))
-          puts "a is empty"
-          return loose_step step_cards
+          #puts "a is empty"
+          return false
         end
       end
-      #remove cards
-      Array(@a).each { |card| hand.delete card }
-      $change_priority = false
-      puts "Priority #{$change_priority}" 
       @a
     end
     
-    def fight_end
-      #clear all table
-      #make an array for used cards
+    def is_there_fight_cards step_cards, trump
+      #check_for_fight_cards step_cards, trump
+      @a = Array.new
+      step_cards.each do |i|
+        @a += hand.select { |card| card if ((card.rank > i.rank) and (card.suit == i.suit))}
+        @a += hand.select { |card| card if ((card.suit == trump.suit) and (card.suit != i.suit))}
+        @a += hand.select { |card| card if ((card.suit == trump.suit) and (i.suit == card.suit) and (card.rank > i.rank))}
+      end
+      @a
     end
     
     def loose_step added_cards
@@ -128,7 +178,10 @@ module Pig
       len = 6 - hand.length
       #draw to 6 from deck
       if len > 0
-        d = game.draw_pile.draw(len)
+        d = game.draw_pile.first(len)
+        Array(d).each do |p|
+          game.draw_pile.delete(p)
+           end
         if (Array(d).compact.empty? and @used == false) 
           d = trump_card
           @used = true
@@ -136,14 +189,18 @@ module Pig
         hand << Array(d).compact
         hand.flatten!
         puts "d = " + d.to_s
-        hand
+      
         #remove it from deck
       end
+      hand.sort_by! { |card| card.rank  }
+      
     end
   end
   
-  class Game
+  class PigGame
     attr_accessor :players, :draw_pile, :turn
+    
+    
 
     def draw_pile= value
       @draw_pile = value.to_deck
@@ -186,7 +243,11 @@ module Pig
         if ((ltc <=> min) == -1)
           min = i
         end
-        return players[min] if i==(np-1)
+        if i==(np-1)
+          return players[min]
+        else 
+          return players[0]
+        end
       end
     end
     
@@ -198,13 +259,13 @@ module Pig
       number_of_players.times do
         player = Player.new(self)
         player.hand = draw_pile.draw(6)
-        until check_suit player.hand.map {|card| card.suit} 
-          player.hand = draw_pile.draw(6)
-        end
+        #  until check_suit player.hand.map {|card| card.suit} 
+        #   player.hand = draw_pile.draw(6)
+        #  end
         @players << player
       end
-      @trump = trump_card
-      @fp = first_player number_of_players, @players, @trump
+      # @trump = trump_card
+      #  @fp = first_player number_of_players, @players, @trump
       #while @fp==nil  
       # @trump = trump_card
       # @fp = first_player number_of_players, @players, @trump

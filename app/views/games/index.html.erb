@@ -1,0 +1,30 @@
+<h3> Player 1: </h3>
+<% @bot.hand.each do |card| %>
+  <%= image_tag "#{card.image_name}.png", :width => 70, :height => 120 %>
+<% end %>
+
+
+ </br>
+</br>
+<table>
+  <td>
+    <p>
+      
+      <%=  image_tag "#{@trump.image_name}.png", :width => 70, :height => 120 %>
+      <%=  image_tag "17.jpg", :width => 70, :height => 120 %>
+    </p>
+  </td>
+  <td>
+    
+  </td>
+</table>
+</br>
+</br>
+
+
+<h3> User: </h3>
+<% @player.hand.each do |card| %>
+    <%=link_to (image_tag "#{card.image_name}.png", :width => 70, :height => 120), games_step_path(:cards => card.to_yaml) %>
+<% end %>
+
+<%= button_to "End fight", games_end_step_path %>
