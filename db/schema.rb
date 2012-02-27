@@ -13,6 +13,14 @@
 
 ActiveRecord::Schema.define(:version => 20120130201918) do
 
+  create_table "cards", :force => true do |t|
+    t.string   "name"
+    t.string   "card_type"
+    t.string   "image_url"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "games", :force => true do |t|
     t.string   "username"
     t.text     "who_held_step"
