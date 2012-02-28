@@ -8,6 +8,7 @@
 </br>
 <table>
   <td>
+    <p> Draw_pile has <%= @g.draw_pile.length %> cards </p>
     <p>
       
       <%=  image_tag "#{@trump.image_name}.png", :width => 70, :height => 120 %>
@@ -24,7 +25,7 @@
 
 <h3> User: </h3>
 <% @player.hand.each do |card| %>
-    <%=link_to (image_tag "#{card.image_name}.png", :width => 70, :height => 120), games_step_path(:cards => card.to_yaml) %>
+    <%=link_to (image_tag "#{card.image_name}.png", :width => 70, :height => 120), games_step_path(:id => @game.id, :cards => card.to_yaml) %>
 <% end %>
 
-<%= button_to "End fight", games_end_step_path %>
+<%= button_to "End fight", games_end_step_path(:id => @game.id) %>

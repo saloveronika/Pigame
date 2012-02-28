@@ -7,6 +7,7 @@
 </br>
 <table>
   <td>
+     <p> Draw_pile has <%= @g.draw_pile.length %> cards </p>
     <p>
 
       <%=  image_tag "#{@trump.image_name}.png", :width => 70, :height => 120 %>
@@ -36,7 +37,7 @@
     <% @a = put.select {|hand_card| hand_card if card == hand_card }.first %>
 
     <% if @a %>
-      <%=link_to (image_tag "#{@a.image_name}.png", :width => 70, :height => 120), games_step_path(:cards => card.to_yaml) %>
+      <%=link_to (image_tag "#{@a.image_name}.png", :width => 70, :height => 120), games_step_path(:id => @game.id, :cards => card.to_yaml) %>
     <% else %>
       <%= image_tag "#{card.image_name}.png", :width => 70, :height => 120 %>
     <% end %>
@@ -48,4 +49,4 @@
 
 <% end %>
 
-<%= button_to "End fight", games_end_step_path %>
+<%= button_to "End fight", games_end_step_path(:id => @game.id) %>

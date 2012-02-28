@@ -22,20 +22,17 @@ class GamesController < ApplicationController
     
     @game = Game.new(:username => "user", :who_held_step => ser_obj_held_step, :g_id => ser_obj_g, :player => ser_obj_player, :bot => ser_obj_bot, :t_card => ser_obj_trump)
    
-    if @game.save
-      session[:id] = @game.id
-    else
-      render :text => "Error!"
-    end
+    render :text => "Error!" unless @game.save
+   
   end
   
   def step 
     @held_step = "player"
     if @player.hand.length > 0
-    @step = @player.user_step YAML.load(params[:cards]) unless $cannot_put
-    @fight = @bot.fight_card @step, @trump  unless $cannot_figth
+      @step = @player.user_step YAML.load(params[:cards]) unless $cannot_put
+      @fight = @bot.fight_card @step, @trump  unless $cannot_figth
     
-    @table += @step
+      @table += @step
     end
     @put_card = @player.is_there_put_cards(@table)
     if @fight
@@ -50,7 +47,7 @@ class GamesController < ApplicationController
 
       end
       
-      @bot.loose_step @table unless (@put_card and (not $cannot_put)     )
+      @bot.loose_step @table #unless (@put_card)# and (not $cannot_put)     )
       
     end
     
@@ -58,7 +55,10 @@ class GamesController < ApplicationController
   
   def end_step
     if @g.over?
+      puts "OOOO"
       render :text => "Game over!!!"
+    else
+      puts "NNNNNNNNNN"
     end
     
     #clear table, step, fight
@@ -68,16 +68,16 @@ class GamesController < ApplicationController
     $cannot_figth = false
     $cannot_put = false
     get_card_from_deck
-    
+   
     if @held_step == "player"
       if $change_priority
         render "index"
       else
-        redirect_to games_bot_step_path
+        redirect_to games_bot_step_path(:id => @game.id)
       end
     elsif @held_step == "bot"
       if $change_priority
-        redirect_to games_bot_step_path
+        redirect_to games_bot_step_path(:id => @game.id)
       else
         render "index"
       end
@@ -117,13 +117,13 @@ class GamesController < ApplicationController
       end
       @player.loose_step @table# unless (@put_card and (not $cannot_put)     )
     end
-    redirect_to games_end_step_path
+    redirect_to games_end_step_path(:id => @game.id)
   end
 
   private
   
   def get_game_from_db
-    @game = Game.where(:id => session[:id]).first
+    @game = Game.find(params[:id])#where(:id => session[:id]).first
    
     @g = YAML.load(@game.g_id)
     @player = YAML.load(@game.player)
@@ -171,8 +171,13 @@ class GamesController < ApplicationController
   end
   
   def get_card_from_deck
-    @player.get_card_from_deck @trump
-    @bot.get_card_from_deck @trump
+    if @game.who_held_step == "player"
+   @player.get_card_from_deck @trump, @g
+   @bot.get_card_from_deck @trump, @g
+    else
+   @bot.get_card_from_deck @trump, @g
+   @player.get_card_from_deck @trump, @g
+    end
   end
  
 end

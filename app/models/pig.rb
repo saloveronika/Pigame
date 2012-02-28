@@ -48,7 +48,7 @@ module Pig
 
     def initialize game
       @game = game
-      @used = false
+      $used = false
       $change_priority = false
       $cannot_figth = false    
       $cannot_put = false
@@ -173,18 +173,16 @@ module Pig
       puts "Priority #{$change_priority}" 
     end
     
-    def get_card_from_deck trump_card
+    def get_card_from_deck trump_card, game
       #number of hand's card
       len = 6 - hand.length
       #draw to 6 from deck
       if len > 0
-        d = game.draw_pile.first(len)
-        Array(d).each do |p|
-          game.draw_pile.delete(p)
-           end
-        if (Array(d).compact.empty? and @used == false) 
+        d = game.draw_pile.shift(len)
+       
+        if (d.compact.empty? and $used == false) 
           d = trump_card
-          @used = true
+          $used = true
         end
         hand << Array(d).compact
         hand.flatten!
@@ -207,7 +205,7 @@ module Pig
     end
     
     def trump_card
-      trump = draw_pile.draw(1)
+      trump = draw_pile.shift(1).first
     end
 
     def check_suit suit
@@ -258,7 +256,7 @@ module Pig
       @players = []
       number_of_players.times do
         player = Player.new(self)
-        player.hand = draw_pile.draw(6)
+        player.hand = draw_pile.shift(6)
         #  until check_suit player.hand.map {|card| card.suit} 
         #   player.hand = draw_pile.draw(6)
         #  end
