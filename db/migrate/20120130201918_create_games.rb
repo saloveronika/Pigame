@@ -12,7 +12,6 @@ class CreateGames < ActiveRecord::Migration
       t.text :d_cards
       t.text :table
      
-  
       t.timestamps
     end
   end

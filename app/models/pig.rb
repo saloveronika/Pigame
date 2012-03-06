@@ -60,18 +60,19 @@ module Pig
       $change_priority = false
       #select less card not trump or repeat cards
       repeat_card = hand.sort_by { |card| card.rank  }.group_by { |card| card.rank }.values.max_by(&:size)
-      less_card = hand.select { |card| card.rank unless card.suit == trump.suit }.sort_by { |card| card.rank  }.first
-     
-      if less_card.rank < repeat_card.first.rank 
-        @lc = less_card
-      else
-        @lc = repeat_card
+      less_card = hand.select { |card| card.rank  }.sort_by { |card| card.rank  }.first
+      #unless card.suit == trump.suit
+      if (less_card and repeat_card)
+        if less_card.rank < repeat_card.first.rank 
+          @lc = less_card
+        else
+          @lc = repeat_card
+        end
+        #remove it from hand
+        #Array(@lc).each { |card| hand.delete card }
+        del_card = Array(@lc).first 
+        hand.delete del_card
       end
-      #remove it from hand
-      #Array(@lc).each { |card| hand.delete card }
-      del_card = Array(@lc).first 
-      hand.delete del_card
-      
     end
        
     
@@ -122,15 +123,20 @@ module Pig
     def check_for_fight_cards step_cards, trump
       @f = Array.new
       @a = Array.new
-      r = Array.new
+      @r = Array.new
+      @mark = false
       step_cards.each do |i|
         @f += hand.select { |card| card if ((card.suit == i.suit) and (card.rank > i.rank)) }.sort_by {|card| card.rank}
         
-        r += hand.select {|card| card.rank if card.suit == trump.suit}
-        r.each do |j|
+        @r += hand.select {|card| card.rank if card.suit == trump.suit}
+        @r.each do |j|
           if ((i.suit==trump.suit) and (i.rank > j.rank))
             #puts "There no trump more than step_card"
-            return false#loose_step step_cards
+            #return false
+            
+          elsif ((i.suit==trump.suit) and (i.rank < j.rank))
+           # @f += r
+           @mark = true
           end
         end
       end
@@ -140,7 +146,7 @@ module Pig
       #puts "In block group_by a=" + @a.to_s + "f=" + @f.to_s
       if (@a.empty? or (@a.length < step_cards.length))
         # add posibility fight with trump cards
-        @a += hand.select{|card| card if card.suit == trump.suit}.sort_by{|card| card.rank}.first(step_cards.length-@a.length)
+        @a += @r.sort_by{|card| card.rank}.first(step_cards.length-@a.length)
       
         #  puts "select trump card"
         # puts "a=" + @a.to_s + "f=" + @f.to_s
@@ -165,8 +171,10 @@ module Pig
     
     def loose_step added_cards
       #draw cards of step in hand
+      added_cards.uniq!
       hand << added_cards
       hand.flatten!
+      hand.uniq!
       puts "You lose step! Add cards to hand"
       #not you turn
       $change_priority =  true
@@ -180,8 +188,8 @@ module Pig
       if len > 0
         d = game.draw_pile.shift(len)
        
-        if (d.compact.empty? and $used == false) 
-          d = trump_card
+        if ((d.compact.empty? and $used == false) and (len - d.length)>0)
+          d += Array(trump_card)
           $used = true
         end
         hand << Array(d).compact
@@ -277,12 +285,16 @@ module Pig
       end
     end
 
-    def over?
+    def over? 
       return false unless draw_pile.empty?
+      puts "#{draw_pile}" + "DDDDDDDD"
+      
       a=0
       players.each do |player|
         a+=1 if player.hand.empty?
+        puts "#{player.hand}" + "HHHHHHH"
       end
+      puts "#{a}" + "AAAAAAA"
       return true if a>0
       
     end

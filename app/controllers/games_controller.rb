@@ -4,8 +4,7 @@ class GamesController < ApplicationController
   require 'yaml'
   
   before_filter :get_game_from_db, :except => :index
-  after_filter :put_game_to_db, :except => :index
-  
+  after_filter :put_game_to_db, :except => [:index, :end_step]
   
   def index
     @g = Pig::PigGame.new(2)
@@ -27,84 +26,99 @@ class GamesController < ApplicationController
   end
   
   def step 
-    @held_step = "player"
-    if @player.hand.length > 0
-      @step = @player.user_step YAML.load(params[:cards]) unless $cannot_put
-      @fight = @bot.fight_card @step, @trump  unless $cannot_figth
-    
-      @table += @step
-    end
-    @put_card = @player.is_there_put_cards(@table)
-    if @fight
-      @table += @fight
-    else
-      $cannot_figth = true
-      #flash[:notice] = "Computer loose step! Do you wanna add card?"
-      #@put_card = @player.is_there_put_cards(@table)
-      
-      if @put_card 
-        $cannot_put = true unless @bot.hand.length >= @put_card.length 
-
+    puts "#{$change_priority}"
+    l = YAML.load(params[:cards])
+    if add_cards_to_table l
+      @held_step = "player"
+      if @player.hand.length > 0
+        @step = @player.user_step l unless $cannot_put
+        @fight = @bot.fight_card @step, @trump  unless $cannot_figth
+        @table += @step 
       end
-      
-      @bot.loose_step @table #unless (@put_card)# and (not $cannot_put)     )
-      
+      @put_card = @player.is_there_put_cards(@table)
+      if @fight
+        puts "#{@fight}" + "fight"
+        @table += @fight
+      else
+        $cannot_figth = true
+        if @put_card 
+          $cannot_put = true unless @bot.hand.length >= @put_card.length 
+        end
+        if $change_priority 
+          @bot.loose_step @step
+        else
+          @bot.loose_step @table #unless ((@put_card) and (not $cannot_put))     
+        end
+      end
+    else
+      render "step"
     end
-    
   end
   
   def end_step
+    @g.players.clear
+    @g.players << @player
+    @g.players << @bot
     if @g.over?
-      puts "OOOO"
+      @game.destroy
       render :text => "Game over!!!"
     else
-      puts "NNNNNNNNNN"
-    end
+      #clear table, step, fight
+      @table.clear if @table
+      @step.clear if @step
+      @fight.clear if @fight
+      $cannot_figth = false
+      $cannot_put = false
+      get_card_from_deck
+      
+      if @held_step == "player"
+        if $change_priority
+          render "index"
+        else
+          redirect_to games_bot_step_path(:id => @game.id)
+        end
+      elsif @held_step == "bot"
+        if $change_priority
+          redirect_to games_bot_step_path(:id => @game.id)
+        else
+          render "index"
+        end
+      end
+      put_game_to_db
+    end   
     
-    #clear table, step, fight
-    @table.clear if @table
-    @step.clear if @step
-    @fight.clear if @fight
-    $cannot_figth = false
-    $cannot_put = false
-    get_card_from_deck
-   
-    if @held_step == "player"
-      if $change_priority
-        render "index"
-      else
-        redirect_to games_bot_step_path(:id => @game.id)
-      end
-    elsif @held_step == "bot"
-      if $change_priority
-        redirect_to games_bot_step_path(:id => @game.id)
-      else
-        render "index"
-      end
-    end
-        
   end
   
   def bot_step
-    @held_step = "bot"
-    if @bot.hand.length > 0
-      @step = Array(@bot.step_card @trump )
-      @table += @step
+    unless (@held_step == "bot" and not($change_priority))
+      @held_step = "bot"
+      if @bot.hand.length > 0
+        @step = Array(@bot.step_card @trump )
+        @table += @step
+      end
     end
     render games_fight_path
   end
 
   def fight
-    @fight = @player.user_fight Array(YAML.load(params[:cards])) 
-    @table += @fight
-    if @fight
-      @step = @bot.is_there_put_cards @table
-      if @step
-        @step = @step.first
-        @step = Array(@step)
-        @table += @step
-        @bot.hand.delete @step.first
-      end     
+    l = YAML.load(params[:cards])
+    if add_cards_to_table l
+      @fight = @player.user_fight Array(l) 
+      if @fight
+        @table += @fight
+        @step = @bot.is_there_put_cards @table
+        if @step
+          @step = @step.first
+          @step = Array(@step)
+          @table += @step
+          @bot.hand.delete @step.first
+        end     
+      end
+      # *100*40*1#
+      #        3
+      #6.87
+    else
+      render "fight"
     end
   end
   
@@ -120,10 +134,15 @@ class GamesController < ApplicationController
     redirect_to games_end_step_path(:id => @game.id)
   end
 
+  def ajax
+    render :text => "Game over!!!"
+    #render "index"
+  end
+  
   private
   
   def get_game_from_db
-    @game = Game.find(params[:id])#where(:id => session[:id]).first
+    @game = Game.find(params[:id])
    
     @g = YAML.load(@game.g_id)
     @player = YAML.load(@game.player)
@@ -160,7 +179,6 @@ class GamesController < ApplicationController
     ser_obj_table = YAML.dump(@table)
     ser_obj_held_step = YAML.dump(@held_step)
     
-    #@game = Game.where(:id => session[:id]).first
     @game.attributes = {:g_id => ser_obj_g, :who_held_step => ser_obj_held_step, :player => ser_obj_player, :bot => ser_obj_bot, :s_cards => ser_obj_step, :f_cards => ser_obj_fight, :table => ser_obj_table}
     
     render :text => "error" unless @game.save
@@ -172,12 +190,30 @@ class GamesController < ApplicationController
   
   def get_card_from_deck
     if @game.who_held_step == "player"
-   @player.get_card_from_deck @trump, @g
-   @bot.get_card_from_deck @trump, @g
+      @player.get_card_from_deck @trump, @g
+      @bot.get_card_from_deck @trump, @g
     else
-   @bot.get_card_from_deck @trump, @g
-   @player.get_card_from_deck @trump, @g
+      @bot.get_card_from_deck @trump, @g
+      @player.get_card_from_deck @trump, @g
+    end
+    
+  end
+  
+  def over
+    @g.players.clear
+    @g.players << @player
+    @g.players << @bot
+    if @g.over?
+      render :text => "Game over!!!"
+    end 
+  end
+  
+  def add_cards_to_table add_card
+    unless @table.include?(add_card)
+      true
+    else
+      false
     end
   end
- 
+  
 end

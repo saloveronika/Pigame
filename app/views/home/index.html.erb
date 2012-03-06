@@ -1,3 +1,4 @@
 <%=  render "rules" %>
 
 <%= button_to "Грати", games_path, method: :get %>
+<%=link_to "over?", home_ajax_path, :remote => true, :class => "ajax_link", "data-type" => "html"%>
