@@ -38,11 +38,11 @@ class GamesController < ApplicationController
       @put_card = @player.is_there_put_cards(@table)
       if @fight
         puts "#{@fight}" + "fight"
-        @table += @fight
+        @table += @fight unless $cannot_figth
       else
         $cannot_figth = true
         if @put_card 
-          $cannot_put = true unless (@bot.hand.length-@table.length) >= @put_card.length 
+          $cannot_put = true unless (@bot.hand.length) >= @step.length 
         end
         if $change_priority 
           @bot.loose_step @step
@@ -126,7 +126,10 @@ class GamesController < ApplicationController
       $cannot_fight = true
       @put_card = @bot.is_there_put_cards @table
       if @put_card 
-        $cannot_put = true unless @player.hand.length >= @put_card.length        
+        unless @player.hand.length >= @put_card.length 
+           $cannot_put = true
+           @table += @put_card
+        end       
       end
       @player.loose_step @table# unless (@put_card and (not $cannot_put)     )
     end

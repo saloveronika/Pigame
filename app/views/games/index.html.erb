@@ -12,8 +12,11 @@
   <td>
     <p> Draw_pile has <%= @g.draw_pile.length %> cards </p>
     <p>
-      
-      <%=  image_tag "#{@trump.image_name}.png", :width => 70, :height => 120 %>
+      <% if $used %>
+        <%=  image_tag "#{@trump.suit.downcase}.png", :width => 70, :height => 120 %>
+      <% else %>
+        <%=  image_tag "#{@trump.image_name}.png", :width => 70, :height => 120 %>
+      <% end %>
       <%=  image_tag "17.jpg", :width => 70, :height => 120 %>
     </p>
   </td>
