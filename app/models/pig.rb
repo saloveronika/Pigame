@@ -124,21 +124,17 @@ module Pig
       @f = Array.new
       @a = Array.new
       @r = Array.new
-      @mark = false
+      #@mark = false
       step_cards.each do |i|
         @f += hand.select { |card| card if ((card.suit == i.suit) and (card.rank > i.rank)) }.sort_by {|card| card.rank}
         
-        @r += hand.select {|card| card.rank if card.suit == trump.suit}
-        @r.each do |j|
-          if ((i.suit==trump.suit) and (i.rank > j.rank))
-            #puts "There no trump more than step_card"
-            #return false
-            
-          elsif ((i.suit==trump.suit) and (i.rank < j.rank))
-           # @f += r
-           @mark = true
-          end
-        end
+        @r += hand.select {|card| card.rank if ((card.suit == trump.suit) and (i.suit!=trump.suit))}
+       # @r.each do |j|
+         # if ((i.suit!=trump.suit))
+          #  @f += Array(j)
+            #@mark = true
+        #  end
+       # end
       end
       @f.group_by {|card| card.suit}.values.each do |cards|
         @a += Array(cards.min_by {|card| card.rank })
@@ -188,8 +184,13 @@ module Pig
       if len > 0
         d = game.draw_pile.shift(len)
        
-        if ((d.compact.empty? and $used == false) and (len - d.length)>0)
+        if ((len - d.length)>0 and $used == false)
           d += Array(trump_card)
+          $used = true
+        end
+        
+        if (d.compact.empty? and $used == false) 
+          d = Array(trump_card)
           $used = true
         end
         hand << Array(d).compact

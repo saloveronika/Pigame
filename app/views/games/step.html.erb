@@ -36,7 +36,7 @@
   <% if put %>
     <% @a = put.select {|hand_card| hand_card if card == hand_card }.first %>
 
-    <% if @a %>
+    <% if (@a and ($cannot_put == false)) %>
       <%=link_to (image_tag "#{@a.image_name}.png", :width => 70, :height => 120), games_step_path(:id => @game.id, :cards => card.to_yaml) %>
     <% else %>
       <%= image_tag "#{card.image_name}.png", :width => 70, :height => 120 %>

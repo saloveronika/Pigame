@@ -42,7 +42,7 @@ class GamesController < ApplicationController
       else
         $cannot_figth = true
         if @put_card 
-          $cannot_put = true unless @bot.hand.length >= @put_card.length 
+          $cannot_put = true unless (@bot.hand.length-@table.length) >= @put_card.length 
         end
         if $change_priority 
           @bot.loose_step @step
@@ -92,7 +92,7 @@ class GamesController < ApplicationController
   def bot_step
     unless (@held_step == "bot" and not($change_priority))
       @held_step = "bot"
-      if @bot.hand.length > 0
+      if @player.hand.length > 0
         @step = Array(@bot.step_card @trump )
         @table += @step
       end
@@ -107,16 +107,15 @@ class GamesController < ApplicationController
       if @fight
         @table += @fight
         @step = @bot.is_there_put_cards @table
-        if @step
-          @step = @step.first
-          @step = Array(@step)
-          @table += @step
-          @bot.hand.delete @step.first
-        end     
+        if @player.hand.length > 0
+          if @step
+            @step = @step.first
+            @step = Array(@step)
+            @table += @step
+            @bot.hand.delete @step.first
+          end   
+        end
       end
-      # *100*40*1#
-      #        3
-      #6.87
     else
       render "fight"
     end
