@@ -8,15 +8,12 @@
 //= require jquery_ujs
 //= require_tree .
 
-
 $(document).ready(function() {
   
  
    $(".ajax_link").live("ajax:success", function(event, data, status, xhr) {
        $(".ajax_link").hide();
-     //  $.ajax({ type: 'GET', cache: false });
-       //alert("ddd");
-       alert(data);
+        alert(data);
    });
  
 });

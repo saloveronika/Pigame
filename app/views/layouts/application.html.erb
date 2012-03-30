@@ -3,23 +3,29 @@
   <head>
     <title>Pigame</title>
     <%= stylesheet_link_tag    "application" %>
-    <%= javascript_include_tag "application" %>
+    <%= javascript_include_tag "application", "home" %>
     <%= csrf_meta_tags %>
+
   </head>
+
   <body>
-    <div class="site">
-     
 
-      <ul class="hmenu">
-        <%= link_to "Правила гри", root_path  %>
-        <%= link_to "Нова гра", games_path %>
-      </ul>
-      <p class="alert"><%= alert %></p>
-     
-
-      <div class="content"><div class="content-wrapper"><%= yield %></div>
+    <div class="header"> 
+      <div> <%=link_to "Головна", root_path, 
+          {:style=>"color: #ffbdbd; font-size: 28px; float: right; padding: 50px 30px 0px 0px; margin-right: 7px "} %> 
       </div>
     </div>
-    <div class="footer", style="color: #ffbdbd">&copy;  2011</div>
+
+    <div class="tophead"> "Pigame"
+      <%=link_to (image_tag "b8.png", :width => 85, :height => 85), games_path %>
+
+    </div>
+    <div class="site">
+
+      <div class="content">
+        <div><div class="content-wrapper"><%= yield %></div> </div>
+      </div>
+    </div>
+    <div class="footer" style="color: #ffbdbd">&copy; Vero 2011</div>
   </body>
 </html>

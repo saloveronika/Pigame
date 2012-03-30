@@ -3,8 +3,6 @@
   <%= image_tag "#{card.image_name}.png", :width => 70, :height => 120 %>
 <% end %>
 
-</br>
-</br>
 <table>
   <td>
     <p> Draw_pile has <%= @g.draw_pile.length %> cards </p>
@@ -30,15 +28,13 @@
     </p>
   </td>
 </table>
-</br>
-</br>
 
-<h3> User: </h3>
+<h3> Player 2: </h3>
 <% @player.hand.each do |card| %>
   <% if @step %>
     <% if f = @player.is_there_fight_cards(@step, @trump) %>
       <% @a = f.select { |fight| fight if fight == card}.first  %>
-      <% if @a %>
+      <% if (@a and ($cannot_put == false)) %>
         <%=link_to (image_tag "#{@a.image_name}.png", :width => 70, :height => 120), games_fight_path(:id => @game.id, :cards => card.to_yaml) %>
       <% else %>
         <%= image_tag "#{card.image_name}.png", :width => 70, :height => 120 %>
@@ -54,5 +50,4 @@
   <% end %>
 <% end %>
 
-<%= button_to "End fight", games_loose_fight_path(:id => @game.id) %>
-
+ <%= link_to (image_tag "b20.gif", :width => 85, :height => 85), games_end_step_path(:id => @game.id), {:style=>"position: absolute;  width: 30%; padding-top: 20px "} %>

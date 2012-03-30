@@ -3,12 +3,10 @@
   <%= image_tag "#{card.image_name}.png", :width => 70, :height => 120 %>
 <% end %>
 
-</br>
-</br>
 <table>
   <td>
     <p> Draw_pile has <%= @g.draw_pile.length %> cards </p>
-    <p>
+    <p >
       <% if $used %>
         <%=  image_tag "#{@trump.suit.downcase}.png", :width => 70, :height => 120 %>
       <% else %>
@@ -30,10 +28,8 @@
     </p>
   </td>
 </table>
-</br>
-</br>
 
-<h3> User: </h3>
+<h3> Player 2: </h3>
 <% put = @player.is_there_put_cards(@table) %>
 <% @player.hand.each do |card| %>
   <% if put %>
@@ -52,4 +48,6 @@
 
 <% end %>
 
-<%= button_to "End fight", games_end_step_path(:id => @game.id) %>
+ <%= link_to (image_tag "b20.gif", :width => 90, :height => 90), games_end_step_path(:id => @game.id), {:style=>"position: absolute;  width: 30%; padding-top: 20px  " } %>
+
+<%=link_to "Підказка", games_ajax_path(:id => @game.id), :remote => true, :class => "ajax_link", "data-type" => "html"%>
