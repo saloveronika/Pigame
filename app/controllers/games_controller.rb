@@ -25,10 +25,10 @@ class GamesController < ApplicationController
    
   end
   
-  def step 
-    puts "#{$change_priority}"
+  def step
     l = YAML.load(params[:cards])
     if add_cards_to_table l
+      $count_steps += 1
       @held_step = "player"
       if @player.hand.length > 0
         @step = @player.user_step l unless $cannot_put
@@ -41,13 +41,24 @@ class GamesController < ApplicationController
         @table += @fight unless $cannot_figth
       else
         $cannot_figth = true
-        if @put_card 
-          $cannot_put = true unless (@bot.hand.length) >= @step.length 
+        if $change_priority
+          handlen = @bot.hand.length-$count_steps-1
+        else
+          handlen = @bot.hand.length-1
+        end
+        if (@put_card and handlen)
+          $cannot_put = true unless (($count_steps < 6) and (handlen >= @put_card.length-$count_steps) ) #-$count_steps
+          puts "bot hand length " + "#{@bot.hand.length}"
+          puts "put card length " + "#{@put_card.length}"
+          puts "table length" + "#{@table.length}"
+          puts "count steps " + "#{$count_steps}"
+          puts "cannot put " + "#{$cannot_put}"
+           puts "handlen " + "#{handlen}"
         end
         if $change_priority 
           @bot.loose_step @step
         else
-          @bot.loose_step @table #unless ((@put_card) and (not $cannot_put))     
+          @bot.loose_step @table 
         end
       end
     else
@@ -56,12 +67,13 @@ class GamesController < ApplicationController
   end
   
   def end_step
+    $count_steps = 0
     @g.players.clear
     @g.players << @player
     @g.players << @bot
     if @g.over?
+      render "game_over"
       @game.destroy
-      render :text => "Game over!!!"
     else
       #clear table, step, fight
       @table.clear if @table
@@ -70,6 +82,7 @@ class GamesController < ApplicationController
       $cannot_figth = false
       $cannot_put = false
       get_card_from_deck
+      put_game_to_db
       
       if @held_step == "player"
         if $change_priority
@@ -84,7 +97,7 @@ class GamesController < ApplicationController
           render "index"
         end
       end
-      put_game_to_db
+      
     end   
     
   end
@@ -103,6 +116,7 @@ class GamesController < ApplicationController
   def fight
     l = YAML.load(params[:cards])
     if add_cards_to_table l
+      $count_steps += 1
       @fight = @player.user_fight Array(l) 
       if @fight
         @table += @fight
@@ -125,14 +139,36 @@ class GamesController < ApplicationController
     if @step
       $cannot_fight = true
       @put_card = @bot.is_there_put_cards @table
+      
+      if $change_priority
+        handlen = @player.hand.length-@table.length-1
+      else
+        handlen = @player.hand.length
+      end
+      
       if @put_card 
-        unless @player.hand.length >= @put_card.length 
-           $cannot_put = true
-           @table += @put_card
+        unless (($count_steps < 6) and (handlen >= @put_card.length) )
+          $cannot_put = true
+          
         end       
       end
-      @player.loose_step @table# unless (@put_card and (not $cannot_put)     )
-    end
+      @player.loose_step @table if handlen>0
+      
+      if (@put_card and handlen)
+        @put_card = @put_card.first(handlen) if handlen > 0
+        
+        @table += @put_card
+        puts "player hand length " + "#{@player.hand.length}"
+        @player.loose_step @put_card if handlen > 0
+        puts "bot hand length " + "#{@player.hand.length}"
+        puts "put card length " + "#{@put_card.length}"
+        puts "table length" + "#{@table.length}"
+        puts "count steps" + "#{$count_steps}"
+        puts "cannot put" + "#{$cannot_put}"
+        puts "handlen " + "#{handlen}"
+        Array(@put_card).each { |c| @bot.hand.delete c }
+      end
+    end 
     redirect_to games_end_step_path(:id => @game.id)
   end
 

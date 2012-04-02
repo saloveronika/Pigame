@@ -1,24 +1,16 @@
 Pigame::Application.routes.draw do
   
-  
+  get 'games/ajax'
   get "games/end_step"
-  post "games/end_step"
   get "games/step"
-  post "games/loose_fight"
+  get "games/loose_fight"
   get "games/fight"
-  post "games/fight"
- 
-  
   get "games/bot_step"
   
   resources :games 
-      
-   
-  
-  
 
   get "home/index"
-   get 'home/ajax'
+
   # The priority is based upon order of creation:
   # first created -> highest priority.
 

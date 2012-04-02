@@ -52,6 +52,7 @@ module Pig
       $change_priority = false
       $cannot_figth = false    
       $cannot_put = false
+      $count_steps = 0
     end
    
   
@@ -175,6 +176,7 @@ module Pig
       #not you turn
       $change_priority =  true
       puts "Priority #{$change_priority}" 
+      
     end
     
     def get_card_from_deck trump_card, game
